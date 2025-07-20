@@ -45,8 +45,8 @@ func (w *Watcher[T]) Get() T {
 }
 
 // Subscribe returns a channel that signals when the config reloads.
-func (w *Watcher[T]) Subscribe() <-chan struct{} {
-	return w.hub.Subscribe(context.Background())
+func (w *Watcher[T]) Subscribe(ctx context.Context) <-chan struct{} {
+	return w.hub.Subscribe(ctx)
 }
 
 // Save writes cfg to disk and reloads. Returns any write or marshal error.
