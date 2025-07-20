@@ -2,3 +2,7 @@ github.com/blackorder/chanhub v0.1.0 h1:0Zj9ve7Wmb4lUk8D6wEE4TeLNngsyT/m2EtXOKs8
 github.com/blackorder/chanhub v0.1.0/go.mod h1:ej86G24dY2z7NyEuRtXLNJsHZXkNvDHxVyKLlISbGTY=
 github.com/blackorder/chanhub v0.1.1 h1:7arShwKKGyrVmpPY1AXQowT93SdSBN01L+YSqZlQkWY=
 github.com/blackorder/chanhub v0.1.1/go.mod h1:ej86G24dY2z7NyEuRtXLNJsHZXkNvDHxVyKLlISbGTY=
+github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S9k=
+github.com/fsnotify/fsnotify v1.9.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
+golang.org/x/sys v0.13.0 h1:Af8nKPmuFypiUBjVoU9V20FiaFXOcuZI21p0ycVYYGE=
+golang.org/x/sys v0.13.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

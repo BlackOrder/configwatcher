@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"sync/atomic"
 
 	"github.com/blackorder/chanhub"
+	"github.com/fsnotify/fsnotify"
 )
 
 // Option configures a Watcher. Use WithErrorChan to receive internal errors.
@@ -23,18 +25,36 @@ type Watcher[T any] struct {
 	value    atomic.Value
 	filename string
 	errChan  chan<- error
+	fsw      *fsnotify.Watcher
+	ctx      context.Context
+	cancel   context.CancelFunc
 }
 
 // NewWatcher creates a Watcher with defaultVal, file path, and optional settings.
 func NewWatcher[T any](defaultVal T, filename string, opts ...Option[T]) *Watcher[T] {
+	absFile, _ := filepath.Abs(filename)
 	w := &Watcher[T]{
 		hub:      chanhub.New(),
-		filename: filename,
+		filename: absFile,
 	}
 	w.value.Store(defaultVal)
 	w.load()
 	for _, opt := range opts {
 		opt(w)
+	}
+
+	// start fsnotify watcher
+	fsw, err := fsnotify.NewWatcher()
+	if err != nil {
+		w.sendError(err)
+	} else {
+		w.fsw = fsw
+		dir := filepath.Dir(absFile)
+		if err := w.fsw.Add(dir); err != nil {
+			w.sendError(err)
+		}
+		w.ctx, w.cancel = context.WithCancel(context.Background())
+		go w.watchFS()
 	}
 	return w
 }
@@ -62,6 +82,28 @@ func (w *Watcher[T]) Save(cfg T) error {
 	}
 	w.load()
 	return nil
+}
+
+// watchFS listens for fsnotify events and reloads on relevant changes.
+func (w *Watcher[T]) watchFS() {
+	for {
+		select {
+		case <-w.ctx.Done():
+			return
+		case ev, ok := <-w.fsw.Events:
+			if !ok {
+				return
+			}
+			if ev.Name == w.filename && (ev.Op&fsnotify.Write == fsnotify.Write || ev.Op&fsnotify.Create == fsnotify.Create) {
+				w.load()
+			}
+		case err, ok := <-w.fsw.Errors:
+			if !ok {
+				return
+			}
+			w.sendError(err)
+		}
+	}
 }
 
 // load reads the file, unmarshals into T, updates on change, and broadcasts.
