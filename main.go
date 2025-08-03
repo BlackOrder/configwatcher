@@ -1,6 +1,7 @@
 package configwatcher
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"os"
@@ -76,7 +77,7 @@ func (w *Watcher[T]) Save(cfg T) error {
 		w.sendError(err)
 		return err
 	}
-	if err = os.WriteFile(w.filename, data, 0644); err != nil {
+	if err = os.WriteFile(w.filename, data, 0o600); err != nil {
 		w.sendError(err)
 		return err
 	}
@@ -137,7 +138,7 @@ func (w *Watcher[T]) writeFile(cfg T) error {
 		w.sendError(err)
 		return err
 	}
-	if err := os.WriteFile(w.filename, data, 0644); err != nil {
+	if err := os.WriteFile(w.filename, data, 0o600); err != nil {
 		w.sendError(err)
 		return err
 	}
@@ -159,5 +160,5 @@ func (w *Watcher[T]) sendError(err error) {
 func equal[T any](a, b T) bool {
 	ar, _ := json.Marshal(a)
 	br, _ := json.Marshal(b)
-	return string(ar) == string(br)
+	return bytes.Equal(ar, br)
 }
